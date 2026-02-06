@@ -59,7 +59,7 @@ if st.button("🚀 Generate Opening Price Forecast", use_container_width=True):
     prediction = model.predict(scaled_features)[0]
     
     st.markdown("---")
-    st.balloons()
+    # Balloon pop-up removed for a cleaner professional look
     st.success(f"### Predicted NEXT DAY OPEN Price: **{prediction:.2f} BDT**")
     
     # Formula Display for academic rigor
@@ -77,9 +77,10 @@ st.markdown(
         width: 100%;
         background-color: transparent;
         color: grey;
-        text-align: right;
+        text-align: center;
         font-style: italic;
-        padding: 10px 20px;
+        padding: 10px;
+        z-index: 100;
     }
     </style>
     <div class="footer">
