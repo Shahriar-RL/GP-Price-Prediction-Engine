@@ -28,7 +28,6 @@ model, scaler, hit_ratio, r2_val = load_data()
 
 # --- UI Layout ---
 st.title("💹 Grameenphone (GP) Prediction Engine")
-st.markdown("### Step 12: Machine Learning Deployment (Production Interface)")
 
 # Sidebar for Model Reliability
 st.sidebar.header("📊 Model Reliability Profile")
@@ -78,13 +77,13 @@ st.markdown(
         width: 100%;
         background-color: transparent;
         color: grey;
-        text-align: center;
+        text-align: right;
         font-style: italic;
-        padding: 10px;
+        padding: 10px 20px;
     }
     </style>
     <div class="footer">
-    <p>This work is developed by Fahmida</p>
+    <p>This work is developed by Fahmida Supta</p>
     </div>
     """,
     unsafe_allow_html=True
