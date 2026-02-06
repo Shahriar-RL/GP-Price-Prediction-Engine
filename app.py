@@ -38,7 +38,7 @@ st.markdown("""
     }
     </style>
     <div class="footer">
-        Developed by Fahmida Supta | Department of ICT, BUET
+        Developed by Fahmida Supta | Department of Finance, FBS, DU
     </div>
     """, unsafe_allow_html=True)
 
@@ -118,3 +118,4 @@ if st.button("EXECUTE FORECAST ENGINE", use_container_width=True):
     with res_col2:
         st.latex(r"\hat{y}_{t+1} = \text{RandomForest}(\mathbf{x}_t)")
         st.info("This forecast accounts for historical volatility clusters and previous-session momentum.")
+
