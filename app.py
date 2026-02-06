@@ -89,33 +89,32 @@ st.markdown("---")
 col1, col2, col3, col4 = st.columns(4)
 
 with col1:
-    # We need Prev Open to calculate the Body (O-C)
-    po = st.number_input("Prev. Open", value=246.0)
+    po = st.number_input("Prev Open", value=246.0)
     st.markdown('<p class="desc-text">ℹ️ Opening price of previous session</p>', unsafe_allow_html=True)
     
-    h = st.number_input("Prev. High", value=250.0)
+    h = st.number_input("Prev_High", value=250.0)
     st.markdown('<p class="desc-text">ℹ️ Highest price yesterday</p>', unsafe_allow_html=True)
 
 with col2:
-    l = st.number_input("Prev. Low", value=245.0)
+    l = st.number_input("Prev_Low", value=245.0)
     st.markdown('<p class="desc-text">ℹ️ Lowest price yesterday</p>', unsafe_allow_html=True)
     
-    c = st.number_input("Prev. Close", value=248.0)
+    c = st.number_input("Prev_Close", value=248.0)
     st.markdown('<p class="desc-text">ℹ️ Final price yesterday</p>', unsafe_allow_html=True)
 
 with col3:
-    v = st.number_input("Volume", value=1000000)
+    v = st.number_input("Prev_Volume", value=1000000)
     st.markdown('<p class="desc-text">ℹ️ Total turnover yesterday</p>', unsafe_allow_html=True)
     
-    ma = st.number_input("MA20 Trend", value=246.0)
+    ma = st.number_input("Prev_MA20", value=246.0)
     st.markdown('<p class="desc-text">ℹ️ 20-day trendline</p>', unsafe_allow_html=True)
 
 with col4:
-    rsi = st.number_input("RSI (14)", value=55.0)
+    rsi = st.number_input("Prev_RSI14", value=55.0)
     st.markdown('<p class="desc-text">ℹ️ Momentum gauge</p>', unsafe_allow_html=True)
 
 # --- Automatic Feature Calculation ---
-# Auto-calculate Body (Open-Close) and Range (Low-High)
+# Mapping to: Prev_Open-Close and Prev_Low-High
 calc_oc = po - c
 calc_lh = l - h
 
@@ -123,16 +122,17 @@ st.markdown("---")
 st.markdown("### Derived Structural Features (Automated)")
 auto_col1, auto_col2 = st.columns(2)
 with auto_col1:
-    st.metric("Calculated Body (O-C)", f"{calc_oc:.2f}")
+    st.metric("Calculated Prev_Open-Close", f"{calc_oc:.2f}")
     st.markdown('<p class="desc-text">ℹ️ Candle Body: Difference between Open and Close</p>', unsafe_allow_html=True)
 with auto_col2:
-    st.metric("Calculated Range (L-H)", f"{calc_lh:.2f}")
+    st.metric("Calculated Prev_Low-High", f"{calc_lh:.2f}")
     st.markdown('<p class="desc-text">ℹ️ Candle Wick: Total daily price range</p>', unsafe_allow_html=True)
 
 # Execution Logic
 st.markdown("##")
 if st.button("EXECUTE FORECAST ENGINE", use_container_width=True):
-    # Vector transformation: Order must match the training features list
+    # Vector transformation: Matches your specified features_list order
+    # features_list = ['Prev_High', 'Prev_Low', 'Prev_Close', 'Prev_Volume', 'Prev_MA20', 'Prev_RSI14', 'Prev_Open-Close', 'Prev_Low-High']
     features = np.array([[h, l, c, v, ma, rsi, calc_oc, calc_lh]])
     scaled_features = scaler.transform(features)
     prediction = model.predict(scaled_features)[0]
@@ -149,5 +149,4 @@ if st.button("EXECUTE FORECAST ENGINE", use_container_width=True):
         """, unsafe_allow_html=True)
     with res_col2:
         st.latex(r"\hat{y}_{t+1} = \text{RF}(\mathbf{x}_{t})")
-        st.info("The model has automatically processed the OHLC spread to ensure high-precision inference.")
-
+        st.info("The engine utilizes a non-linear ensemble approach to capture market inefficiencies.")
