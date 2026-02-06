@@ -36,30 +36,29 @@ st.markdown("""
         border: 1px solid #e2e8f0;
         box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
     }
-    .desc-text {
-        font-size: 12px;
-        color: #64748b;
-        margin-top: -15px;
-        margin-bottom: 10px;
-        font-style: italic;
-    }
     </style>
     <div class="footer">
         Developed by Fahmida Supta | Department of Finance, FBS, DU
     </div>
     """, unsafe_allow_html=True)
 
-# --- Asset Loading ---
+# --- Asset Loading with Diagnostic Check ---
 @st.cache_resource
 def load_assets():
     files = ['gp_rf_model.joblib', 'scaler.joblib', 'X_valid.joblib', 'Y_valid.joblib']
     missing_files = [f for f in files if not os.path.exists(f)]
+    
     if missing_files:
         st.error(f"⚠️ Critical System Error: Missing files detected: {', '.join(missing_files)}")
+        st.info("Ensure these files are uploaded to your GitHub repository with exact filenames.")
         st.stop()
+        
     try:
-        model, scaler = joblib.load('gp_rf_model.joblib'), joblib.load('scaler.joblib')
-        xv, yv = joblib.load('X_valid.joblib'), joblib.load('Y_valid.joblib')
+        model = joblib.load('gp_rf_model.joblib')
+        scaler = joblib.load('scaler.joblib')
+        xv = joblib.load('X_valid.joblib')
+        yv = joblib.load('Y_valid.joblib')
+        
         preds = model.predict(xv)
         r2 = r2_score(yv, preds) * 100
         actual_diff = np.diff(np.array(yv).flatten()) > 0
@@ -87,53 +86,22 @@ st.markdown("##### AI-Driven Forecasting for DSE Opening Prices")
 st.markdown("---")
 
 col1, col2, col3, col4 = st.columns(4)
-
 with col1:
-    po = st.number_input("Prev Open", value=246.0)
-    st.markdown('<p class="desc-text">ℹ️ Opening price of previous session</p>', unsafe_allow_html=True)
-    
-    h = st.number_input("Prev_High", value=250.0)
-    st.markdown('<p class="desc-text">ℹ️ Highest price yesterday</p>', unsafe_allow_html=True)
-
+    h = st.number_input("Prev. High", value=250.0)
+    ma = st.number_input("MA20 Trend", value=246.0)
 with col2:
-    l = st.number_input("Prev_Low", value=245.0)
-    st.markdown('<p class="desc-text">ℹ️ Lowest price yesterday</p>', unsafe_allow_html=True)
-    
-    c = st.number_input("Prev_Close", value=248.0)
-    st.markdown('<p class="desc-text">ℹ️ Final price yesterday</p>', unsafe_allow_html=True)
-
+    l = st.number_input("Prev. Low", value=245.0)
+    rsi = st.number_input("RSI (14)", value=55.0)
 with col3:
-    v = st.number_input("Prev_Volume", value=1000000)
-    st.markdown('<p class="desc-text">ℹ️ Total turnover yesterday</p>', unsafe_allow_html=True)
-    
-    ma = st.number_input("Prev_MA20", value=246.0)
-    st.markdown('<p class="desc-text">ℹ️ 20-day trendline</p>', unsafe_allow_html=True)
-
+    c = st.number_input("Prev. Close", value=248.0)
+    oc = st.number_input("Body (O-C)", value=2.0)
 with col4:
-    rsi = st.number_input("Prev_RSI14", value=55.0)
-    st.markdown('<p class="desc-text">ℹ️ Momentum gauge</p>', unsafe_allow_html=True)
+    v = st.number_input("Volume", value=1000000)
+    lh = st.number_input("Range (L-H)", value=-5.0)
 
-# --- Automatic Feature Calculation ---
-# Mapping to: Prev_Open-Close and Prev_Low-High
-calc_oc = po - c
-calc_lh = l - h
-
-st.markdown("---")
-st.markdown("### Derived Structural Features (Automated)")
-auto_col1, auto_col2 = st.columns(2)
-with auto_col1:
-    st.metric("Calculated Prev_Open-Close", f"{calc_oc:.2f}")
-    st.markdown('<p class="desc-text">ℹ️ Candle Body: Difference between Open and Close</p>', unsafe_allow_html=True)
-with auto_col2:
-    st.metric("Calculated Prev_Low-High", f"{calc_lh:.2f}")
-    st.markdown('<p class="desc-text">ℹ️ Candle Wick: Total daily price range</p>', unsafe_allow_html=True)
-
-# Execution Logic
 st.markdown("##")
 if st.button("EXECUTE FORECAST ENGINE", use_container_width=True):
-    # Vector transformation: Matches your specified features_list order
-    # features_list = ['Prev_High', 'Prev_Low', 'Prev_Close', 'Prev_Volume', 'Prev_MA20', 'Prev_RSI14', 'Prev_Open-Close', 'Prev_Low-High']
-    features = np.array([[h, l, c, v, ma, rsi, calc_oc, calc_lh]])
+    features = np.array([[h, l, c, v, ma, rsi, oc, lh]])
     scaled_features = scaler.transform(features)
     prediction = model.predict(scaled_features)[0]
     
@@ -148,5 +116,7 @@ if st.button("EXECUTE FORECAST ENGINE", use_container_width=True):
             </div>
         """, unsafe_allow_html=True)
     with res_col2:
-        st.latex(r"\hat{y}_{t+1} = \text{RF}(\mathbf{x}_{t})")
-        st.info("The engine utilizes a non-linear ensemble approach to capture market inefficiencies.")
+        st.latex(r"\hat{y}_{t+1} = \text{RandomForest}(\mathbf{x}_t)")
+        st.info("This forecast accounts for historical volatility clusters and previous-session momentum.")
+
+
