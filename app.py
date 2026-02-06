@@ -26,7 +26,7 @@ st.markdown("""
         text-align: right;     /* align text to the right */
         font-size: 12px;
         border-top: 1px solid #e2e8f0;
-        padding: 8px 20px;     /* add some spacing from the edge */
+        padding: 8px 30px;     /* add some spacing from the edge */
         z-index: 100;
     }
     .result-card {
@@ -142,5 +142,6 @@ if st.button("EXECUTE FORECAST ENGINE", use_container_width=True):
     with res_col2:
         st.latex(r"\hat{y}_{t+1} = \text{RandomForest}(\mathbf{x}_t)")
         st.info("This forecast accounts for historical volatility clusters and previous-session momentum.")
+
 
 
