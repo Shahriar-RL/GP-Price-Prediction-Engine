@@ -141,4 +141,5 @@ if st.button("EXECUTE FORECAST ENGINE", use_container_width=True):
         """, unsafe_allow_html=True)
     with res_col2:
         st.latex(r"\hat{y}_{t+1} = \text{RandomForest}(\mathbf{x}_t)")
-        st.info("The system has automatically extracted candlestick features for this inference.")
+        st.info("This forecast accounts for historical volatility clusters and previous-session momentum.")
+
