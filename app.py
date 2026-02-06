@@ -53,16 +53,14 @@ st.markdown("""
 @st.cache_resource
 def load_assets():
     files = ['gp_rf_model.joblib', 'scaler.joblib', 'X_valid.joblib', 'Y_valid.joblib']
-    missing_files = [f for f in files if not os.path.exists(f)]
-    if missing_files:
-        st.error(f"⚠️ Critical System Error: Missing files detected: {', '.join(missing_files)}")
+    if not all(os.path.exists(f) for f in files):
+        st.error("⚠️ Asset Loading Error: Files not found. Ensure .joblib files are in the repository.")
         st.stop()
     try:
         model = joblib.load('gp_rf_model.joblib')
         scaler = joblib.load('scaler.joblib')
         xv = joblib.load('X_valid.joblib')
         yv = joblib.load('Y_valid.joblib')
-        
         preds = model.predict(xv)
         r2 = r2_score(yv, preds) * 100
         actual_diff = np.diff(np.array(yv).flatten()) > 0
@@ -92,20 +90,24 @@ st.markdown("---")
 col1, col2, col3, col4 = st.columns(4)
 
 with col1:
+    # We use po (Previous Open) to calculate the Open-Close spread automatically
     po = st.number_input("Prev. Open", value=246.0)
     st.markdown('<p class="desc-text">ℹ️ Opening price of previous session</p>', unsafe_allow_html=True)
+    
     h = st.number_input("Prev. High", value=250.0)
     st.markdown('<p class="desc-text">ℹ️ Highest price yesterday</p>', unsafe_allow_html=True)
 
 with col2:
     l = st.number_input("Prev. Low", value=245.0)
     st.markdown('<p class="desc-text">ℹ️ Lowest price yesterday</p>', unsafe_allow_html=True)
+    
     c = st.number_input("Prev. Close", value=248.0)
     st.markdown('<p class="desc-text">ℹ️ Final price yesterday</p>', unsafe_allow_html=True)
 
 with col3:
     v = st.number_input("Volume", value=1000000)
     st.markdown('<p class="desc-text">ℹ️ Total turnover yesterday</p>', unsafe_allow_html=True)
+    
     ma = st.number_input("MA20 Trend", value=246.0)
     st.markdown('<p class="desc-text">ℹ️ 20-day trendline</p>', unsafe_allow_html=True)
 
@@ -113,14 +115,15 @@ with col4:
     rsi = st.number_input("RSI (14)", value=55.0)
     st.markdown('<p class="desc-text">ℹ️ Momentum gauge</p>', unsafe_allow_html=True)
 
-# --- Internal Feature Processing ---
-# Automatically calculating candle mechanics for the model
+# --- Automated Feature Processing ---
+# These are calculated behind the scenes to keep the UI clean
 calc_oc = po - c
 calc_lh = l - h
 
+# Execution Logic
 st.markdown("##")
 if st.button("EXECUTE FORECAST ENGINE", use_container_width=True):
-    # Vector transformation: Order must match training features list
+    # Vector transformation: Matches your specified features_list order
     # [High, Low, Close, Volume, MA20, RSI, O-C, L-H]
     features = np.array([[h, l, c, v, ma, rsi, calc_oc, calc_lh]])
     scaled_features = scaler.transform(features)
@@ -132,10 +135,10 @@ if st.button("EXECUTE FORECAST ENGINE", use_container_width=True):
         st.markdown(f"""
             <div class="result-card">
                 <span style="color: #64748b; font-size: 14px; text-transform: uppercase;">Predicted Opening Price</span>
-                <h1 style="margin-top: 8px; color: #0f172a;">{prediction:.2f} BDT</h1>
-                <p style="color: #22c55e; font-size: 14px; margin-top: 10px;">✔ Forecast generated with statistical confidence.</p>
+                <h2 style="margin-top: 8px; color: #0f172a;">{prediction:.2f} BDT</h2>
+                <p style="color: #22c55e; font-size: 14px; margin-top: 10px;">✔ Analysis complete.</p>
             </div>
         """, unsafe_allow_html=True)
     with res_col2:
         st.latex(r"\hat{y}_{t+1} = \text{RandomForest}(\mathbf{x}_t)")
-        st.info("The model has processed multivariate technical signals and candlestick mechanics for this inference.")
+        st.info("The system has automatically extracted candlestick features for this inference.")
